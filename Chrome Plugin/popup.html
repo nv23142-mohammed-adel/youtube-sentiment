@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>YouTube Comment Insights</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      padding: 12px;
+      background-color: #0a0a0a;
+      color: #e8e8e8;
+      width: 380px;
+    }
+
+    h1 {
+      font-size: 18px;
+      color: #f5c518;
+      text-align: center;
+      padding: 10px 0 12px;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #f5c518;
+      margin-bottom: 14px;
+    }
+
+    p {
+      font-size: 12px;
+      color: #aaa;
+      margin: 4px 0;
+    }
+
+    .section {
+      margin-bottom: 14px;
+      background-color: #1a1a1a;
+      border-radius: 6px;
+      padding: 12px;
+      border: 1px solid #2a2a2a;
+    }
+
+    .section-title {
+      font-weight: bold;
+      color: #f5c518;
+      font-size: 13px;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #333;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Metrics */
+    .metrics-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .metric {
+      flex: 1 1 calc(50% - 4px);
+      background-color: #242424;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+      border: 1px solid #2e2e2e;
+    }
+
+    .metric-title {
+      font-size: 10px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .metric-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #f5c518;
+      margin-top: 4px;
+    }
+
+    /* Comment lists */
+    .comment-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .comment-item {
+      margin: 6px 0;
+      padding: 8px 10px;
+      background-color: #242424;
+      border-radius: 4px;
+      border-left: 3px solid #555;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .comment-positive {
+      border-left-color: #4caf50;
+      background-color: #192a19;
+    }
+
+    .comment-negative {
+      border-left-color: #f44336;
+      background-color: #2a1919;
+    }
+
+    .comment-neutral {
+      border-left-color: #888;
+    }
+
+    .comment-sentiment {
+      font-weight: bold;
+      font-size: 11px;
+      margin-top: 5px;
+      display: inline-block;
+    }
+
+    .sentiment-positive { color: #4caf50; }
+    .sentiment-negative { color: #f44336; }
+    .sentiment-neutral  { color: #aaa; }
+
+    /* Images */
+    img {
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube Comment Insights</h1>
+  <div id="output" class="section"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
