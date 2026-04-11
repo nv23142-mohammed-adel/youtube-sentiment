@@ -1,7 +1,7 @@
 ##Environment setup
 
 
-conda create -n youtube python=3.11 -y
+conda create -n youtube python=3.11 -c main -y
 
 conda activate youtube
 
