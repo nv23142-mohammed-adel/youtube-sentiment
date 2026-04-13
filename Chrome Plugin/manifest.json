@@ -10,6 +10,7 @@
     "tabs",
     "activeTab",
     "scripting",
+    "storage",
     "http://localhost/*",
     "https://www.googleapis.com/*"
   ]
