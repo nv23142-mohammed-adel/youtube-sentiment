@@ -4,6 +4,7 @@ matplotlib.use('Agg')  # Use non-interactive backend before importing pyplot
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import io
+import os
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import mlflow
@@ -50,39 +51,40 @@ def preprocess_comment(comment):
 
 
 
-# Load the model and vectorizer from the model registry and local storage
-# def load_model_and_vectorizer(model_name, model_version, vectorizer_path):
-#     # Set MLflow tracking URI to your server
-#     mlflow.set_tracking_uri("http://ec2-54-167-108-249.compute-1.amazonaws.com:5000/")  # Replace with your MLflow tracking URI
-#     client = MlflowClient()
-#     model_uri = f"models:/{model_name}/{model_version}"
-#     model = mlflow.pyfunc.load_model(model_uri)
-#     with open(vectorizer_path, 'rb') as file:
-#         vectorizer = pickle.load(file)
-   
-#     return model, vectorizer
+def load_model_from_mlflow(model_name, model_version, vectorizer_path):
+    """Load the model from MLflow registry and vectorizer from local storage."""
+    tracking_uri = os.environ.get('MLFLOW_TRACKING_URI', 'http://localhost:5000')
+    mlflow.set_tracking_uri(tracking_uri)
+    model_uri = f"models:/{model_name}/{model_version}"
+    model = mlflow.pyfunc.load_model(model_uri)
+    with open(vectorizer_path, 'rb') as file:
+        vectorizer = pickle.load(file)
+    return model, vectorizer
 
 
-
-def load_model(model_path, vectorizer_path):
-    """Load the trained model."""
-    try:
-        with open(model_path, 'rb') as file:
-            model = pickle.load(file)
-        
-        with open(vectorizer_path, 'rb') as file:
-            vectorizer = pickle.load(file)
-      
-        return model, vectorizer
-    except Exception as e:
-        raise
+def load_model_local(model_path, vectorizer_path):
+    """Load the model and vectorizer from local pickle files."""
+    with open(model_path, 'rb') as file:
+        model = pickle.load(file)
+    with open(vectorizer_path, 'rb') as file:
+        vectorizer = pickle.load(file)
+    return model, vectorizer
 
 
-# Initialize the model and vectorizer
-model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")  
+# Select loading strategy via MODEL_SOURCE env var.
+# Set MODEL_SOURCE=mlflow (and MLFLOW_TRACKING_URI, MODEL_NAME, MODEL_VERSION) for AWS.
+# Defaults to local pickle files for local testing.
+_model_source = os.environ.get('MODEL_SOURCE', 'local')
 
-# Initialize the model and vectorizer
-# model, vectorizer = load_model_and_vectorizer("my_model", "1", "./tfidf_vectorizer.pkl")  # Update paths and versions as needed
+if _model_source == 'mlflow':
+    _mlflow_model_name = os.environ.get('MODEL_NAME', 'yt_chrome_plugin_model')
+    _mlflow_model_version = os.environ.get('MODEL_VERSION', '1')
+    _vectorizer_path = os.environ.get('VECTORIZER_PATH', './tfidf_vectorizer.pkl')
+    model, vectorizer = load_model_from_mlflow(_mlflow_model_name, _mlflow_model_version, _vectorizer_path)
+else:
+    _model_path = os.environ.get('MODEL_PATH', './lgbm_model.pkl')
+    _vectorizer_path = os.environ.get('VECTORIZER_PATH', './tfidf_vectorizer.pkl')
+    model, vectorizer = load_model_local(_model_path, _vectorizer_path)
 
 @app.route('/')
 def home():

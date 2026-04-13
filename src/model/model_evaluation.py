@@ -127,7 +127,8 @@ def save_model_info(run_id: str, model_path: str, file_path: str) -> None:
 
 
 def main():
-    mlflow.set_tracking_uri(http://ec2-23-20-151-48.compute-1.amazonaws.com:5000/)
+    # Override with MLFLOW_TRACKING_URI env var for AWS
+    mlflow.set_tracking_uri(os.environ.get('MLFLOW_TRACKING_URI', 'http://localhost:5000'))
 
     mlflow.set_experiment('dvc-pipeline-runs')
     
@@ -145,8 +146,8 @@ def main():
             model = load_model(os.path.join(root_dir, 'lgbm_model.pkl'))
             vectorizer = load_vectorizer(os.path.join(root_dir, 'tfidf_vectorizer.pkl'))
 
-            # Load test data for signature inference
-            test_data = load_data(os.path.join(root_dir, 'reddit_preprocessed.csv'))
+            # Load test data for evaluation and signature inference
+            test_data = load_data(os.path.join(root_dir, 'data', 'interim', 'test_processed.csv'))
 
             # Prepare test data
             X_test_tfidf = vectorizer.transform(test_data['clean_comment'].values)
