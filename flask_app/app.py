@@ -93,15 +93,42 @@ def _build_chart_b64(sentiment_counts):
         int(sentiment_counts.get('0', 0)),
         int(sentiment_counts.get('-1', 0))
     ]
-    if sum(sizes) == 0:
+    total = sum(sizes)
+    if total == 0:
         raise ValueError("Sentiment counts sum to zero")
-    colors = ['#36A2EB', '#C9CBCF', '#FF6384']
+
+    colors = ['green', 'gray', 'red']
+
+    # Build labels with percentages
+    legend_labels = [
+        f"{label} ({size/total*100:.1f}%)"
+        for label, size in zip(labels, sizes)
+    ]
+
     fig, ax = plt.subplots(figsize=(6, 6))
-    ax.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%',
-           startangle=140, textprops={'color': 'w'})
+
+    wedges, _ = ax.pie(
+        sizes,
+        colors=colors,
+        startangle=140
+    )
+
+    # Legend at the bottom (clearly below the chart)
+    ax.legend(
+        wedges,
+        legend_labels,
+        loc='upper center',
+        bbox_to_anchor=(0.5, -0.15),
+        ncol=3,
+        frameon=False,
+        labelcolor="white",
+        fontsize=12
+    )
+
     ax.axis('equal')
+
     buf = io.BytesIO()
-    fig.savefig(buf, format='PNG', transparent=True)
+    fig.savefig(buf, format='PNG', transparent=True, bbox_inches='tight')
     buf.seek(0)
     plt.close(fig)
     return base64.b64encode(buf.read()).decode('utf-8')
@@ -122,7 +149,6 @@ def _build_wordcloud_b64(comments):
 
 
 def _build_trend_b64(sentiment_data):
-    """Build a monthly sentiment trend graph and return it as a base64 PNG string."""
     df = pd.DataFrame(sentiment_data)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
@@ -138,26 +164,52 @@ def _build_trend_b64(sentiment_data):
             monthly_percentages[sv] = 0
     monthly_percentages = monthly_percentages[[-1, 0, 1]]
 
-    colors = {-1: 'red', 0: 'gray', 1: 'green'}
-    fig, ax = plt.subplots(figsize=(12, 6))
+    colors = {-1: 'red', 0: 'lightgray', 1: 'lime'}
+
+    # Dark background
+    fig, ax = plt.subplots(figsize=(12, 6), facecolor='#2b2b2b')
+    ax.set_facecolor('#2b2b2b')
+
     for sv in [-1, 0, 1]:
-        ax.plot(monthly_percentages.index, monthly_percentages[sv],
-                marker='o', linestyle='-', label=sentiment_labels[sv], color=colors[sv])
-    ax.set_title('Monthly Sentiment Percentage Over Time')
-    ax.set_xlabel('Month')
-    ax.set_ylabel('Percentage of Comments (%)')
-    ax.grid(True)
+        ax.plot(
+            monthly_percentages.index,
+            monthly_percentages[sv],
+            marker='o',
+            linestyle='-',
+            label=sentiment_labels[sv],
+            color=colors[sv]
+        )
+
+    # Text colors
+    ax.set_title('Monthly Sentiment Percentage Over Time', color='white')
+    ax.set_xlabel('Month', color='white')
+    ax.set_ylabel('Percentage of Comments (%)', color='white')
+
+    # Tick colors
+    ax.tick_params(colors='white')
+    for spine in ax.spines.values():
+        spine.set_color('white')
+
+    # Grid
+    ax.grid(True, color='gray', alpha=0.3)
+
     plt.xticks(rotation=45)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
     ax.xaxis.set_major_locator(mdates.AutoDateLocator(maxticks=12))
-    ax.legend()
+
+    # Legend styling
+    legend = ax.legend(facecolor='#2b2b2b', edgecolor='white')
+    for text in legend.get_texts():
+        text.set_color('white')
+
     fig.tight_layout()
+
     buf = io.BytesIO()
-    fig.savefig(buf, format='PNG')
+    fig.savefig(buf, format='PNG', facecolor=fig.get_facecolor())
     buf.seek(0)
     plt.close(fig)
-    return base64.b64encode(buf.read()).decode('utf-8')
 
+    return base64.b64encode(buf.read()).decode('utf-8')
 
 # ---------------------------------------------------------------------------
 # Routes
